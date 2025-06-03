@@ -50,17 +50,19 @@ namespace SQLiteExample
 
         static void CreateDatabaseAndTable()
         {
-            if (!File.Exists(dbFile))
+            try
             {
-                SQLiteConnection.CreateFile(dbFile);
-                Console.WriteLine("Database file created.");
-            }
+                if (!File.Exists(dbFile))
+                {
+                    SQLiteConnection.CreateFile(dbFile);
+                    Console.WriteLine("Database file created.");
+                }
 
-            using (var connection = new SQLiteConnection($"Data Source={dbFile};Version=3;"))
-            {
-                connection.Open();
+                using (var connection = new SQLiteConnection($"Data Source={dbFile};Version=3;"))
+                {
+                    connection.Open();
 
-                string createTableQuery = @"
+                    string createTableQuery = @"
                     CREATE TABLE IF NOT EXISTS Tasks (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Title TEXT NOT NULL,
@@ -68,27 +70,39 @@ namespace SQLiteExample
                         CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
                     );";
 
-                using (var command = new SQLiteCommand(createTableQuery, connection))
-                {
-                    command.ExecuteNonQuery();
+                    using (var command = new SQLiteCommand(createTableQuery, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
                 }
+
+                Console.WriteLine("Table creation successfull");
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("An exception occured");
+                Console.WriteLine(ex.Message);
             }
         }
 
         static void UpdateTask()
         {
-            Console.WriteLine("Enter the Task ID");
-            if (!int.TryParse(Console.ReadLine(), out int id))
+
+            try
             {
-                Console.WriteLine("Invalid ID. Press Enter to continue.");
-                Console.ReadLine();
-                return;
-            }
-            Console.Write("Enter task details: ");
-            string Updatedescription = Console.ReadLine();
-            Console.Write("Enter task Description: ");
-            string Updatedescriptiondetails = Console.ReadLine();
-          
+                Console.WriteLine("Enter the Task ID");
+                if (!int.TryParse(Console.ReadLine(), out int id))
+                {
+                    Console.WriteLine("Invalid ID. Press Enter to continue.");
+                    Console.ReadLine();
+                    return;
+                }
+                Console.Write("Enter task details: ");
+                string Updatedescription = Console.ReadLine();
+                Console.Write("Enter task Description: ");
+                string Updatedescriptiondetails = Console.ReadLine();
+
 
                 using (var connection = new SQLiteConnection($"Data Source={dbFile};Version=3;"))
                 {
@@ -112,91 +126,126 @@ namespace SQLiteExample
                     Console.ReadLine();
                 }
             }
-        
+            catch (Exception ex)
+            {
+                Console.WriteLine("An exception occured");
+                Console.WriteLine(ex.Message);
+            }
+        }
+
 
         static void AddTask()
         {
-            Console.Write("Enter task title: ");
-            string title = Console.ReadLine();
-
-            Console.Write("Enter task description: ");
-            string description = Console.ReadLine();
-
-            using (var connection = new SQLiteConnection($"Data Source={dbFile};Version=3;"))
+            try
             {
-                connection.Open();
+                Console.Write("Enter task title: ");
+                string title = Console.ReadLine();
 
-                string insertQuery = "INSERT INTO Tasks (Title, Description) VALUES (@title, @description)";
+                Console.Write("Enter task description: ");
+                string description = Console.ReadLine();
 
-                using (var command = new SQLiteCommand(insertQuery, connection))
+                using (var connection = new SQLiteConnection($"Data Source={dbFile};Version=3;"))
                 {
-                    command.Parameters.AddWithValue("@title", title);
-                    command.Parameters.AddWithValue("@description", description);
-                    command.ExecuteNonQuery();
-                }
+                    connection.Open();
 
-                Console.WriteLine("Task added. Press Enter to continue.");
-                Console.ReadLine();
+                    string insertQuery = "INSERT INTO Tasks (Title, Description) VALUES (@title, @description)";
+
+                    using (var command = new SQLiteCommand(insertQuery, connection))
+                    {
+                        command.Parameters.AddWithValue("@title", title);
+                        command.Parameters.AddWithValue("@description", description);
+                        command.ExecuteNonQuery();
+                    }
+
+                    Console.WriteLine("Task added. Press Enter to continue.");
+                    Console.ReadLine();
+                }
+                Console.WriteLine("Task added successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An exception occured");
+                Console.WriteLine(ex.Message);
             }
         }
 
         static void ViewTasks()
         {
-            using (var connection = new SQLiteConnection($"Data Source={dbFile};Version=3;"))
+            try
             {
-                connection.Open();
-
-                string selectQuery = "SELECT * FROM Tasks ORDER BY CreatedAt DESC";
-
-                using (var command = new SQLiteCommand(selectQuery, connection))
-                using (var reader = command.ExecuteReader())
+                using (var connection = new SQLiteConnection($"Data Source={dbFile};Version=3;"))
                 {
-                    Console.WriteLine("\n-- Tasks --");
-                    while (reader.Read())
-                    {
-                        Console.WriteLine($"ID: {reader["Id"]}");
-                        Console.WriteLine($"Title: {reader["Title"]}");
-                        Console.WriteLine($"Description: {reader["Description"]}");
-                        Console.WriteLine($"Created At: {reader["CreatedAt"]}");
-                        Console.WriteLine("---------------------------");
-                    }
+                    connection.Open();
 
-                    Console.WriteLine("Press Enter to continue.");
-                    Console.ReadLine();
+                    string selectQuery = "SELECT * FROM Tasks ORDER BY CreatedAt DESC";
+
+                    using (var command = new SQLiteCommand(selectQuery, connection))
+                    using (var reader = command.ExecuteReader())
+                    {
+                        Console.WriteLine("\n-- Tasks --");
+                        while (reader.Read())
+                        {
+                            Console.WriteLine($"ID: {reader["Id"]}");
+                            Console.WriteLine($"Title: {reader["Title"]}");
+                            Console.WriteLine($"Description: {reader["Description"]}");
+                            Console.WriteLine($"Created At: {reader["CreatedAt"]}");
+                            Console.WriteLine("---------------------------");
+                        }
+
+                        Console.WriteLine("Press Enter to continue.");
+                        Console.ReadLine();
+                    }
                 }
+                Console.WriteLine("viewed task successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An exception occured");
+                Console.WriteLine(ex.Message);
             }
         }
 
         static void DeleteTask()
         {
-            Console.Write("Enter Task ID to delete: ");
-            if (!int.TryParse(Console.ReadLine(), out int id))
+            try
             {
-                Console.WriteLine("Invalid ID. Press Enter to continue.");
-                Console.ReadLine();
-                return;
-            }
-
-            using (var connection = new SQLiteConnection($"Data Source={dbFile};Version=3;"))
-            {
-                connection.Open();
-
-                string deleteQuery = "DELETE FROM Tasks WHERE Id = @id";
-
-                using (var command = new SQLiteCommand(deleteQuery, connection))
+                Console.Write("Enter Task ID to delete: ");
+                if (!int.TryParse(Console.ReadLine(), out int id))
                 {
-                    command.Parameters.AddWithValue("@id", id);
-                    int rowsAffected = command.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
-                        Console.WriteLine("Task deleted.");
-                    else
-                        Console.WriteLine("Task not found.");
+                    Console.WriteLine("Invalid ID. Press Enter to continue.");
+                    Console.ReadLine();
+                    return;
                 }
 
-                Console.WriteLine("Press Enter to continue.");
-                Console.ReadLine();
+                using (var connection = new SQLiteConnection($"Data Source={dbFile};Version=3;"))
+                {
+                    connection.Open();
+
+                    string deleteQuery = "DELETE FROM Tasks WHERE Id = @id";
+
+                    using (var command = new SQLiteCommand(deleteQuery, connection))
+                    {
+                        command.Parameters.AddWithValue("@id", id);
+                        int rowsAffected = command.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                            Console.WriteLine("Task deleted.");
+                        else
+                            Console.WriteLine("Task not found.");
+                    }
+
+                    Console.WriteLine("Press Enter to continue.");
+                    Console.ReadLine();
+                }
+                Console.WriteLine("Task deleted successfully");
+
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An exception occured");
+                Console.WriteLine(ex.Message);
+            }
+
         }
     }
 }
